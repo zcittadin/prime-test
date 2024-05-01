@@ -1,0 +1,110 @@
+<div class="card flex justify-content-start">
+<p-button class="py-2" size="small" (click)="showDialog()" icon="pi pi-plus" label="Adicionar"></p-button>
+<p-dialog header="{{dialogTitle}}" [(visible)]="visible" [style]="{width: '30vw'}">
+    <p-divider></p-divider>
+    <br>
+    <div class="flex justify-content-center">
+        <form [formGroup]="formEmployee" (ngSubmit)="onSubmit()">
+            <div class="field px-4">
+                <label for="firstName">First name: </label>
+                <input class="w-full" id="firstName" type="text" pInputText name="firstName" formControlName="firstName"
+                    required>
+            </div>
+            <div class="field px-4">
+                <label for="lastName">Last name: </label>
+                <input class="w-full" id="lastName" type="text" pInputText name="lastName" formControlName="lastName"
+                    required>
+            </div>
+            <div class="field px-4">
+                <label for="salary">Salary: </label>
+                <p-inputNumber class="w-full" size="small" [showButtons]="true" id="salary" name="salary"
+                    inputId="integeronly" formControlName="salary" required></p-inputNumber>
+            </div>
+            <p-divider></p-divider>
+            <div class="flex justify-content-center">
+                <div class="field grid">
+                    <div class="field col">
+                        <p-button severity="success" [raised]="true" type="submit"
+                            [disabled]="!formEmployee.valid">Salvar</p-button>
+                    </div>
+                    <div class="field col">
+                        <p-button class="p-button-text" severity="danger" [raised]="true" [text]="true" type="button"
+                            (click)="hideDialog()">Cancelar</p-button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</p-dialog>
+</div>
+
+<div class="flex justify-content-center">
+    <p-table styleClass="p-datatable-striped p-datatable-sm p-datatable-gridlines" [value]="employees"
+        [tableStyle]="{ 'width': '65rem' }">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>
+                    <div style="text-align: center; width: 100%;">
+                        ID
+                    </div>
+                </th>
+                <th>NOME</th>
+                <th>SOBRENOME</th>
+                <th>
+                    <div style="text-align: end; width: 100%;">
+                        SALÁRIO
+                    </div>
+                </th>
+                <th>
+                    <div style="text-align: center; width: 100%;">
+                        EDITAR
+                    </div>
+                </th>
+                <th>
+                    <div style="text-align: center; width: 100%;">
+                        REMOVER
+                    </div>
+                </th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-emp>
+            <tr>
+                <td>
+                    <div style="text-align: center; width: 100%;">
+                        {{ emp.id }}
+                    </div>
+                </td>
+                <td>{{ emp.firstName | uppercase }}</td>
+                <td>{{ emp.lastName | uppercase }}</td>
+                <td>
+                    <div style="text-align: end; width: 100%;">
+                        {{ emp.salary | currency: 'BRL' }}
+                    </div>
+                </td>
+                <td>
+                    <div style="text-align: center; width: 100%;">
+                        <button type="button" class="p-button-help p-button-sm p-2 w-4" pButton pRipple
+                            icon="pi pi-pencil" (click)="edit(emp)"></button>
+                    </div>
+                </td>
+                <td>
+                    <div style="text-align: center; width: 100%;">
+                        <button type="button" class="p-button-danger p-button-sm p-2 w-3" pButton pRipple
+                            icon="pi pi-trash" (click)="confirm(emp)"></button>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<p-confirmDialog>
+    <ng-template pTemplate="message" let-message>
+        <div class="flex flex-column align-items-center w-full gap-3 border-bottom-1 surface-border">
+            <i class="pi pi-exclamation-circle text-6xl text-primary-500"></i>
+            <p>{{ message.message }}</p>
+        </div>
+    </ng-template>
+</p-confirmDialog>
+
+<p-toast></p-toast>

@@ -18,10 +18,14 @@ import { ConfirmationService, MessageService } from 'primeng/api';;
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { EmployeeService } from './service/employee.service';
+import { TarefaComponent } from './components/tarefa/tarefa.component';
+import { AlunoComponent } from './components/aluno/aluno.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    TarefaComponent,
+    AlunoComponent
   ],
   imports: [
     BrowserModule,
