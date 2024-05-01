@@ -15,6 +15,7 @@ export class AppComponent implements OnInit {
   idEditing: number = 0;
   formEmployee!: FormGroup;
   employees!: Employee[];
+  dialogTitle!: string;
 
   constructor(private formBuilder: FormBuilder,
     private empService: EmployeeService,
@@ -33,6 +34,7 @@ export class AppComponent implements OnInit {
   }
 
   showDialog() {
+    this.dialogTitle = "Adicionar registro"
     this.visible = true;
   }
 
@@ -89,6 +91,7 @@ export class AppComponent implements OnInit {
     this.formEmployee.get('firstName')?.setValue(employee.firstName);
     this.formEmployee.get('lastName')?.setValue(employee.lastName);
     this.formEmployee.get('salary')?.setValue(employee.salary);
+    this.dialogTitle = "Edição de registro"
     this.idEditing = employee.id;
     this.visible = true;
   }
