@@ -1,0 +1,16 @@
+{
+  "employees": [
+    {
+      "id": 6,
+      "firstName": "Donald",
+      "lastName": "Trump",
+      "salary": 600000
+    },
+    {
+      "firstName": "Jair",
+      "lastName": "Bolsonaro",
+      "salary": 995000,
+      "id": 7
+    }
+  ]
+}
