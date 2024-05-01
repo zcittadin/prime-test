@@ -11,8 +11,9 @@ import { DividerModule } from 'primeng/divider';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TableModule } from 'primeng/table';
+import { ToastModule } from 'primeng/toast';
 
-import { ConfirmationService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';;
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -34,9 +35,10 @@ import { EmployeeService } from './service/employee.service';
     ButtonModule,
     ConfirmDialogModule,
     InputTextModule,
-    InputNumberModule
+    InputNumberModule,
+    ToastModule
   ],
-  providers: [EmployeeService, ConfirmationService],
+  providers: [EmployeeService, ConfirmationService, MessageService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

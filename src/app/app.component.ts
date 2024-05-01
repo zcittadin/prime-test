@@ -19,7 +19,7 @@ export class AppComponent implements OnInit {
   constructor(private formBuilder: FormBuilder,
     private empService: EmployeeService,
     private confirmationService: ConfirmationService,
-    /*private messageService: MessageService*/
+    private messageService: MessageService
   ) { }
 
   ngOnInit(): void {
@@ -114,11 +114,11 @@ export class AppComponent implements OnInit {
       acceptButtonStyleClass: 'p-button-outlined p-button-sm',
       accept: () => {
         this.remove(employee);
-        //this.messageService.add({ severity: 'info', summary: 'Confirmed', detail: 'You have accepted', life: 3000 });
+        this.messageService.add({ severity: 'info', summary: 'Confirmed', detail: 'You have accepted', life: 3000 });
       },
       reject: () => {
         this.visible = false;
-        //this.messageService.add({ severity: 'error', summary: 'Rejected', detail: 'You have rejected', life: 3000 });
+        this.messageService.add({ severity: 'error', summary: 'Rejected', detail: 'You have rejected', life: 3000 });
       }
     });
   }
