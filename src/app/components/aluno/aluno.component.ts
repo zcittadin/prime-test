@@ -23,32 +23,12 @@ export class AlunoComponent implements OnInit {
   constructor(private formBuilder: FormBuilder,
     private empService: EmployeeService,
     private confirmationService: ConfirmationService,
-    private messageService: MessageService, zone: NgZone
+    private messageService: MessageService, private zone: NgZone
   ) {
-    electron.ipcRenderer.on('insert_done', (event: any, arg: any) => {
-      zone.run(() => {
-        const emp: Employee = arg;
-        this.employees.push(emp);
-      });
-      this.messageService.add({ severity: 'success', summary: 'OK', detail: 'Adicionado com sucesso.', life: 3000 });
-    });
-    electron.ipcRenderer.on('update_done', (event: any, arg: any) => {
-      zone.run(() => {
-        this.getAll();
-      });
-      this.messageService.add({ severity: 'info', summary: 'OK', detail: 'Atualizado com sucesso.', life: 3000 });
-    });
-    electron.ipcRenderer.on('remove_done', (event: any, arg: any) => {
-      zone.run(() => {
-        this.employees = this.employees.filter(item => item.id !== this.idRemove);
-      });
-      this.messageService.add({ severity: 'warn', summary: 'OK', detail: 'Removido com sucesso.', life: 3000 });
-    });
-    electron.ipcRenderer.on('fetch_done', (event: any, arg: any) => {
-      zone.run(() => {
-        this.employees = JSON.parse(arg);
-      });
-    });
+    electron.ipcRenderer.on('insert_done', this.insertDone);
+    electron.ipcRenderer.on('update_done', this.updateDone);
+    electron.ipcRenderer.on('remove_done', this.removeDone);
+    electron.ipcRenderer.on('fetch_done', this.fetchDone);
   }
 
   ngOnInit(): void {
@@ -61,14 +41,12 @@ export class AlunoComponent implements OnInit {
     this.getAll();
   }
 
-  showDialog() {
-    this.dialogTitle = "Adicionar registro"
-    this.visible = true;
-  }
-
-  hideDialog() {
-    this.visible = false;
-    this.formEmployee.reset();
+  ngOnDestroy(): void {
+    this.messageService.clear();
+    electron.ipcRenderer.removeListener('insert_done', this.insertDone);
+    electron.ipcRenderer.removeListener('update_done', this.updateDone);
+    electron.ipcRenderer.removeListener('remove_done', this.removeDone);
+    electron.ipcRenderer.removeListener('fetch_done', this.fetchDone);
   }
 
   getAll() {
@@ -121,6 +99,44 @@ export class AlunoComponent implements OnInit {
       reject: () => {
         this.visible = false;
       }
+    });
+  }
+
+  showDialog() {
+    this.dialogTitle = "Adicionar registro"
+    this.visible = true;
+  }
+
+  hideDialog() {
+    this.visible = false;
+    this.formEmployee.reset();
+  }
+
+  insertDone = (event: any, arg: any) => {
+    this.zone.run(() => {
+      const emp: Employee = arg;
+      this.employees.push(emp);
+    });
+    this.messageService.add({ severity: 'success', summary: 'OK', detail: 'Adicionado com sucesso.', life: 3000 });
+  }
+
+  updateDone = (event: any, arg: any) => {
+    this.zone.run(() => {
+      this.getAll();
+    });
+    this.messageService.add({ severity: 'info', summary: 'OK', detail: 'Atualizado com sucesso.', life: 3000 });
+  }
+
+  removeDone = (event: any, arg: any) => {
+    this.zone.run(() => {
+      this.employees = this.employees.filter(item => item.id !== this.idRemove);
+    });
+    this.messageService.add({ severity: 'warn', summary: 'OK', detail: 'Removido com sucesso.', life: 3000 });
+  }
+
+  fetchDone = (event: any, arg: any) => {
+    this.zone.run(() => {
+      this.employees = JSON.parse(arg);
     });
   }
 
