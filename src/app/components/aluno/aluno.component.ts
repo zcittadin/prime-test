@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, NgZone, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Employee } from '../../model/employee';
 import { EmployeeService } from '../../service/employee.service';
-import { ConfirmationService, MessageService, ConfirmEventType } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
+
+const electron = (<any>window).require('electron');
 
 @Component({
   selector: 'app-aluno',
@@ -13,6 +15,7 @@ export class AlunoComponent implements OnInit {
 
   visible: boolean = false;
   idEditing: number = 0;
+  idRemove: number = 0;
   formEmployee!: FormGroup;
   employees!: Employee[];
   dialogTitle!: string;
@@ -20,17 +23,42 @@ export class AlunoComponent implements OnInit {
   constructor(private formBuilder: FormBuilder,
     private empService: EmployeeService,
     private confirmationService: ConfirmationService,
-    private messageService: MessageService
-  ) { }
+    private messageService: MessageService, zone: NgZone
+  ) {
+    electron.ipcRenderer.on('insert_done', (event: any, arg: any) => {
+      zone.run(() => {
+        const emp: Employee = arg;
+        this.employees.push(emp);
+      });
+      this.messageService.add({ severity: 'success', summary: 'OK', detail: 'Adicionado com sucesso.', life: 3000 });
+    });
+    electron.ipcRenderer.on('update_done', (event: any, arg: any) => {
+      zone.run(() => {
+        this.getAll();
+      });
+      this.messageService.add({ severity: 'info', summary: 'OK', detail: 'Atualizado com sucesso.', life: 3000 });
+    });
+    electron.ipcRenderer.on('remove_done', (event: any, arg: any) => {
+      zone.run(() => {
+        this.employees = this.employees.filter(item => item.id !== this.idRemove);
+      });
+      this.messageService.add({ severity: 'warn', summary: 'OK', detail: 'Removido com sucesso.', life: 3000 });
+    });
+    electron.ipcRenderer.on('fetch_done', (event: any, arg: any) => {
+      zone.run(() => {
+        this.employees = JSON.parse(arg);
+      });
+    });
+  }
 
   ngOnInit(): void {
-    this.getEmployeeList();
     const emp = new Employee();
     this.formEmployee = this.formBuilder.group({
       firstName: [emp.firstName],
       lastName: [emp.lastName],
       salary: [emp.salary]
     })
+    this.getAll();
   }
 
   showDialog() {
@@ -43,46 +71,24 @@ export class AlunoComponent implements OnInit {
     this.formEmployee.reset();
   }
 
-  getEmployeeList() {
-    this.empService.getEmployeeList().subscribe({
-      next: (res) => {
-        console.log(res);
-        this.employees = res;
-      },
-      error: (err) => {
-        console.log(err);
-      },
-    });
+  getAll() {
+    electron.ipcRenderer.send('get_all', null);
   }
 
   onSubmit() {
     if (this.idEditing !== 0) {
-      this.empService.updateEmployee(this.idEditing, this.formEmployee.value).subscribe({
-        next: (val: any) => {
-          console.log(val);
-          this.formEmployee.reset();
-          this.visible = false;
-          this.idEditing = 0;
-          this.getEmployeeList();
-        },
-        error: (err: any) => {
-          console.error(err);
-          alert("Error while adding the employee!");
-        },
-      });
+      const param = {
+        id: this.idEditing,
+        data: this.formEmployee.value
+      };
+      electron.ipcRenderer.send('update', param);
+      this.formEmployee.reset();
+      this.visible = false;
+      this.idEditing = 0;
     } else {
-      this.empService.addEmployee(this.formEmployee.value).subscribe({
-        next: (val: any) => {
-          console.log(val);
-          this.employees.push(val);
-          this.formEmployee.reset();
-          this.visible = false;
-        },
-        error: (err: any) => {
-          console.error(err);
-          alert("Error while adding the employee!");
-        },
-      });
+      electron.ipcRenderer.send('insert', this.formEmployee.value);
+      this.formEmployee.reset();
+      this.visible = false;
     }
   }
 
@@ -97,14 +103,8 @@ export class AlunoComponent implements OnInit {
   }
 
   remove(employee: Employee) {
-    this.empService.deleteEmployee(employee.id).subscribe({
-      next: (res) => {
-        this.getEmployeeList();
-      },
-      error: (err) => {
-        console.log(err);
-      },
-    });
+    this.idRemove = employee.id;
+    electron.ipcRenderer.send('remove', employee.id);
   }
 
   confirm(employee: Employee) {
@@ -117,11 +117,9 @@ export class AlunoComponent implements OnInit {
       acceptButtonStyleClass: 'p-button-outlined p-button-sm',
       accept: () => {
         this.remove(employee);
-        this.messageService.add({ severity: 'info', summary: 'Confirmed', detail: 'You have accepted', life: 3000 });
       },
       reject: () => {
         this.visible = false;
-        this.messageService.add({ severity: 'error', summary: 'Rejected', detail: 'You have rejected', life: 3000 });
       }
     });
   }
